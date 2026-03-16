@@ -436,6 +436,9 @@ export function DiscoverPage() {
     setLoading,
   } = useMatchStore();
 
+  console.log("openTeams",openTeams);
+  
+
   // Switch to "suggested" tab after creating a team request (now just load data)
   useEffect(() => {
     if (hasMatchedFromRequest) {
@@ -443,25 +446,7 @@ export function DiscoverPage() {
     }
   }, [hasMatchedFromRequest]);
 
-  // Load data
-  useEffect(() => {
-    const sport = selectedSport === 'All' ? undefined : selectedSport;
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const [teamsRes, playersRes] = await Promise.all([
-          matchApi.getOpenTeams({ sport, maxDistance: selectedDistance }),
-          matchApi.getAllPlayers({ sport, maxDistance: selectedDistance })
-        ]);
-        setOpenTeams(teamsRes);
-        setAllPlayers(playersRes);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSport, selectedDistance]);
+
 
   // Combined and filtered items
   const combinedItems = useMemo(() => {

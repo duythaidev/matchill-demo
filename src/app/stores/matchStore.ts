@@ -79,6 +79,8 @@ interface MatchState {
   setActiveTab: (tab: 'open-teams' | 'suggested') => void;
   setFilters: (filters: Partial<MatchFilters>) => void;
   reset: () => void;
+  addOpenTeam: (team: OpenTeam) => void;
+
 }
 
 const defaultFilters: MatchFilters = {
@@ -110,4 +112,5 @@ export const useMatchStore = create<MatchState>()((set) => ({
     set((state) => ({ filters: { ...state.filters, ...filters } })),
   reset: () =>
     set({ currentRequest: null, suggestions: [], requestId: null, hasMatchedFromRequest: false }),
+  addOpenTeam: (team) => set((state) => ({ openTeams: [team, ...state.openTeams] })),
 }));
