@@ -71,7 +71,7 @@ export function FindPartnerPage() {
   const currentUser = useAuthStore((s) => s.currentUser);
   const { currentRequest, matchingStatus, matchedGroup, setMatchingStatus, setMatchedGroup, setShowQuickModal, reset } =
     useFindPartnerStore();
-  const { setChats } = useChatStore();
+  const { chats, setChats } = useChatStore();
 
   const [msgIndex, setMsgIndex] = useState(0);
   const [elapsed, setElapsed] = useState(0);
@@ -113,26 +113,33 @@ export function FindPartnerPage() {
         const result = await findPartnerApi.findPartner(currentRequest);
 
         if (result.status === 'matched') {
-          // Build a new chat room entry to add to the chat list
+          // Only match one partner (1-on-1)
+          const partner = result.members[0];
+
+          // Build a new private chat room entry
           const newChat = {
             id: result.chatId,
-            type: 'group' as const,
-            name: `Team ${result.sport} ${new Date(result.timeStart).toLocaleDateString('vi-VN', { day: 'numeric', month: 'numeric' })}`,
-            groupAvatar: SPORT_EMOJI[result.sport] || '🏅',
+            type: 'private' as const,
+            name: partner.name,
+            avatar: partner.avatar,
             participants: [
               {
                 userId: 'me',
                 name: currentUser?.fullName || 'Bạn',
                 avatar: currentUser?.avatarUrl || '',
               },
-              ...result.members.map((m) => ({ userId: m.userId, name: m.name, avatar: m.avatar })),
+              {
+                userId: partner.userId,
+                name: partner.name,
+                avatar: partner.avatar,
+              },
             ],
             lastMessage: {
               id: `sys_${Date.now()}`,
               senderId: 'system',
               senderName: 'Hệ thống',
               senderAvatar: '',
-              text: `🎉 Team ghép thành công! Chào mừng ${result.members.length + 1} thành viên!`,
+              text: `🎉 Bạn đã ghép cặp thành công với ${partner.name}!`,
               createdAt: new Date().toISOString(),
               seenBy: [],
               type: 'system' as const,
@@ -140,20 +147,22 @@ export function FindPartnerPage() {
             unreadCount: 1,
           };
 
-          // Add to mock chats list
+          // Ensure the mock chat store has this room so redirect works
           MOCK_CHATS.unshift(newChat);
+          setChats([newChat, ...chats]);
 
           setMatchedGroup({
             groupId: result.groupId,
             chatId: result.chatId,
             status: 'matched',
-            members: result.members,
+            members: [partner],
             sport: result.sport,
             timeStart: result.timeStart,
           });
           setMatchingStatus('matched');
 
-          toast.success('🎉 Đã tìm thấy teammate! Group chat đã tạo!', { duration: 4000 });
+          toast.success('🎉 Đã tìm thấy người đồng hành! Chuyển đến chat...', { duration: 2500 });
+          navigate(`/chat/${result.chatId}`);
         } else {
           setMatchingStatus('not_found');
           toast.error('Chưa tìm thấy teammate phù hợp trong bán kính của bạn.');
@@ -185,7 +194,7 @@ export function FindPartnerPage() {
 
   const handleGoToChat = () => {
     if (matchedGroup) {
-      navigate(`/chat/chat_private_1`);
+      navigate(`/chat/${matchedGroup.chatId}`);
     }
   };
 

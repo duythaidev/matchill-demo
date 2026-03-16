@@ -76,10 +76,9 @@ export const findPartnerApi = {
 
     callCount = 0;
 
-    // Pick 2-3 members based on playersNeeded
-    const count = Math.min(req.playersNeeded, 3);
+    // Only match one partner (1-on-1)
     const shuffled = [...MATCHED_MEMBERS_POOL].sort(() => Math.random() - 0.5);
-    const members = shuffled.slice(0, count);
+    const members = [shuffled[0]];
 
     const groupId = `group_${Date.now()}`;
     const chatId = `chat_fp_${Date.now()}`;
