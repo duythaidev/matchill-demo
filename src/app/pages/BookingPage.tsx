@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Skeleton } from '../components/ui/skeleton';
-import { Venue, TimeSlot } from '../stores/bookingStore';
 import { useBookingStore } from '../stores/bookingStore';
 import { venueApi, bookingApi } from '../api/matchVenueApi';
 import { format } from 'date-fns';
@@ -62,7 +61,19 @@ function SlotPicker({
   );
 }
 
-function SuccessScreen({ booking, venueName }: { booking: { qrCode: string; start: string; end: string; depositAmount: number; totalAmount: number }; venueName: string }) {
+function SuccessScreen({
+  booking,
+  venueName,
+  refundTimeLeft,
+  onRefund,
+  isRefunding
+}: {
+  booking: { qrCode: string; start: string; end: string; depositAmount: number; totalAmount: number; bookingId: string };
+  venueName: string;
+  refundTimeLeft: number;
+  onRefund: () => void;
+  isRefunding: boolean;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -130,6 +141,49 @@ function SuccessScreen({ booking, venueName }: { booking: { qrCode: string; star
           Xem lịch đặt
         </Button>
       </div>
+
+      {/* Refund Section */}
+      {refundTimeLeft > 0 ? (
+        <div className="mt-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
+          <div className="flex items-center gap-2 mb-2">
+            <Info className="w-4 h-4 text-amber-600" />
+            <span className="text-sm font-medium text-amber-800 dark:text-amber-200">
+              Hoàn tiền trong {Math.floor(refundTimeLeft / 60)}:{(refundTimeLeft % 60).toString().padStart(2, '0')}
+            </span>
+          </div>
+          <p className="text-xs text-amber-700 dark:text-amber-300 mb-3">
+            Bạn có thể yêu cầu hoàn tiền đặt cọc trong vòng 5 phút sau khi đặt sân thành công.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full border-amber-300 text-amber-700 hover:bg-amber-100 dark:border-amber-700 dark:text-amber-300 dark:hover:bg-amber-900/30"
+            onClick={onRefund}
+            disabled={isRefunding}
+          >
+            {isRefunding ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                Đang xử lý...
+              </>
+            ) : (
+              'Yêu cầu hoàn tiền'
+            )}
+          </Button>
+        </div>
+      ) : (
+        <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-900/20 border border-gray-200 dark:border-gray-800 rounded-xl">
+          <div className="flex items-center gap-2 mb-2">
+            <Info className="w-4 h-4 text-gray-600" />
+            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+              Quá thời hạn hoàn tiền
+            </span>
+          </div>
+          <p className="text-xs text-gray-700 dark:text-gray-300">
+            Thời hạn hoàn tiền đã hết. Vui lòng liên hệ hỗ trợ nếu cần hỗ trợ.
+          </p>
+        </div>
+      )}
     </motion.div>
   );
 }
@@ -151,12 +205,44 @@ export function BookingPage() {
     end: string;
     depositAmount: number;
     totalAmount: number;
+    bookingId: string;
   }>(null);
+  const [refundTimeLeft, setRefundTimeLeft] = useState(300); // 5 minutes in seconds
+  const [isRefunding, setIsRefunding] = useState(false);
 
-  const { selectedSlots, toggleSlot, clearSlots, walletBalance, deductWallet, addBooking } =
+  const { selectedSlots, toggleSlot, clearSlots, walletBalance, deductWallet, addBooking, requestRefund } =
     useBookingStore();
 
   const today = new Date().toISOString().split('T')[0];
+
+  // Countdown for refund
+  useEffect(() => {
+    if (!completedBooking) return;
+    const interval = setInterval(() => {
+      setRefundTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [completedBooking]);
+
+  const handleRefund = async () => {
+    if (!completedBooking?.bookingId) return;
+
+    setIsRefunding(true);
+    try {
+      await requestRefund(completedBooking.bookingId);
+      toast.success('Yêu cầu hoàn tiền đã được gửi. Chúng tôi sẽ xử lý trong 24h.');
+    } catch (error) {
+      toast.error('Không thể gửi yêu cầu hoàn tiền. Vui lòng liên hệ hỗ trợ.');
+    } finally {
+      setIsRefunding(false);
+    }
+  };
 
   // Days picker
   const days = Array.from({ length: 7 }, (_, i) => {
@@ -213,7 +299,6 @@ export function BookingPage() {
         depositAmount,
         totalAmount,
       });
-      deductWallet(depositAmount);
       addBooking(booking);
       setCompletedBooking({
         qrCode: booking.qrCode || `MATCHILL-${Date.now()}`,
@@ -221,6 +306,7 @@ export function BookingPage() {
         end: booking.end,
         depositAmount,
         totalAmount,
+        bookingId: booking.bookingId,
       });
       toast.success('🎉 Đặt sân thành công!');
     } catch {
@@ -248,7 +334,13 @@ export function BookingPage() {
   if (completedBooking) {
     return (
       <div className="container mx-auto px-4 py-6 max-w-md">
-        <SuccessScreen booking={completedBooking} venueName={venue.name} />
+        <SuccessScreen
+          booking={completedBooking}
+          venueName={venue.name}
+          refundTimeLeft={refundTimeLeft}
+          onRefund={handleRefund}
+          isRefunding={isRefunding}
+        />
       </div>
     );
   }
@@ -277,11 +369,10 @@ export function BookingPage() {
             <button
               key={d.iso}
               onClick={() => setSelectedDate(d.iso)}
-              className={`shrink-0 flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl border text-sm transition-all ${
-                selectedDate === d.iso
+              className={`shrink-0 flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl border text-sm transition-all ${selectedDate === d.iso
                   ? 'border-teal-600 bg-teal-600 text-white'
                   : 'border-border hover:border-teal-400 text-muted-foreground'
-              }`}
+                }`}
             >
               <span className="text-xs opacity-75">{d.label}</span>
               <span className="font-semibold">{d.day}</span>

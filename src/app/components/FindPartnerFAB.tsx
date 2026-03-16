@@ -33,9 +33,8 @@ export function FindPartnerFAB() {
   const [sport, setSport] = useState('Badminton');
   const [playersNeeded, setPlayersNeeded] = useState(2);
   const [radiusKm, setRadiusKm] = useState(10);
-  const [skillMin, setSkillMin] = useState(1);
-  const [skillMax, setSkillMax] = useState(5);
-  const [timePreset, setTimePreset] = useState<'morning' | 'evening' | 'weekend'>('evening');
+  const [skillLevel, setSkillLevel] = useState<'casual' | 'intermediate' | 'competitive'>('intermediate');
+  const [flexibleTime, setFlexibleTime] = useState(false);
   const [starting, setStarting] = useState(false);
   const [fabTooltip, setFabTooltip] = useState(false);
 
@@ -43,40 +42,20 @@ export function FindPartnerFAB() {
 
   const isSearching = matchingStatus === 'searching';
 
-  const getTimeRange = () => {
-    const now = new Date();
-    const base = new Date();
-    if (timePreset === 'morning') {
-      base.setHours(7, 0, 0, 0);
-      const end = new Date(base);
-      end.setHours(9, 0, 0, 0);
-      return { timeStart: base.toISOString(), timeEnd: end.toISOString() };
-    } else if (timePreset === 'evening') {
-      base.setHours(18, 0, 0, 0);
-      const end = new Date(base);
-      end.setHours(20, 0, 0, 0);
-      return { timeStart: base.toISOString(), timeEnd: end.toISOString() };
-    } else {
-      // Weekend
-      const day = base.getDay();
-      const daysUntilSat = day === 6 ? 7 : (6 - day);
-      base.setDate(base.getDate() + daysUntilSat);
-      base.setHours(8, 0, 0, 0);
-      const end = new Date(base);
-      end.setHours(10, 0, 0, 0);
-      return { timeStart: base.toISOString(), timeEnd: end.toISOString() };
-    }
-  };
 
   const handleStartSearch = () => {
     setStarting(true);
-    const { timeStart, timeEnd } = getTimeRange();
+    // Map skill level to numbers
+    const skillMapping = {
+      casual: [1, 2],
+      intermediate: [2, 4],
+      competitive: [4, 5]
+    };
+    const [skillMin, skillMax] = skillMapping[skillLevel];
     const request = {
       sport,
       location: { lat: 10.776, lng: 106.7009 },
       radiusKm,
-      timeStart,
-      timeEnd,
       skillMin,
       skillMax,
       playersNeeded,
@@ -135,11 +114,10 @@ export function FindPartnerFAB() {
                   }
                   setShowQuickModal(true);
                 }}
-                className={`relative w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-colors ${
-                  isSearching
-                    ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-500/40'
-                    : 'bg-teal-600 hover:bg-teal-700 shadow-teal-600/40'
-                }`}
+                className={`relative w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-colors ${isSearching
+                  ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-500/40'
+                  : 'bg-teal-600 hover:bg-teal-700 shadow-teal-600/40'
+                  }`}
               >
                 {isSearching ? (
                   <Loader2 className="w-6 h-6 text-white animate-spin" />
@@ -214,11 +192,10 @@ export function FindPartnerFAB() {
                       <button
                         key={s.value}
                         onClick={() => setSport(s.value)}
-                        className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm transition-all ${
-                          sport === s.value
-                            ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300'
-                            : 'border-border hover:border-teal-400 text-muted-foreground'
-                        }`}
+                        className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm transition-all ${sport === s.value
+                          ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300'
+                          : 'border-border hover:border-teal-400 text-muted-foreground'
+                          }`}
                       >
                         <span className="text-base">{s.emoji}</span>
                         <span className="text-xs">{s.value}</span>
@@ -232,22 +209,18 @@ export function FindPartnerFAB() {
                   <p className="text-sm font-semibold flex items-center gap-1.5">
                     <Clock className="w-4 h-4 text-teal-500" /> Thời gian
                   </p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {TIME_PRESETS.map((t) => (
-                      <button
-                        key={t.id}
-                        onClick={() => setTimePreset(t.id)}
-                        className={`flex flex-col items-center gap-1 py-3 px-2 rounded-xl border transition-all ${
-                          timePreset === t.id
-                            ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/20'
-                            : 'border-border hover:border-teal-400'
-                        }`}
-                      >
-                        <span className="text-xl">{t.emoji}</span>
-                        <span className="text-xs font-medium">{t.label}</span>
-                        <span className="text-xs text-muted-foreground">{t.sub}</span>
-                      </button>
-                    ))}
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="flexibleTime"
+                      checked={flexibleTime}
+                      onChange={(e) => setFlexibleTime(e.target.checked)}
+                      className="rounded"
+                    />
+                    <label htmlFor="flexibleTime" className="text-xs text-muted-foreground">
+                      Thời gian linh hoạt (bàn bạc sau khi match)
+                    </label>
                   </div>
                 </div>
 
@@ -271,31 +244,40 @@ export function FindPartnerFAB() {
                   </div>
                 </div>
 
-                {/* Skill Range */}
+                {/* Skill Level */}
                 <div className="space-y-2">
                   <p className="text-sm font-semibold flex items-center gap-1.5">
-                    <Star className="w-4 h-4 text-amber-400" /> Trình độ:{' '}
-                    <span className="text-teal-600 dark:text-teal-400">{skillMin}★–{skillMax}★</span>
+                    <Star className="w-4 h-4 text-amber-400" /> Trình độ mong muốn
                   </p>
-                  <div className="flex gap-2">
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <button
-                        key={n}
-                        onClick={() => {
-                          if (n <= skillMax) setSkillMin(n);
-                          if (n >= skillMin) setSkillMax(n);
-                        }}
-                        className={`flex-1 py-1.5 rounded-lg text-xs border transition-all ${
-                          n >= skillMin && n <= skillMax
-                            ? 'bg-amber-100 dark:bg-amber-900/30 border-amber-400 text-amber-700 dark:text-amber-300'
-                            : 'border-border text-muted-foreground hover:border-amber-300'
+                  <div className="grid grid-cols-1 gap-2">
+                    <button
+                      onClick={() => setSkillLevel('casual')}
+                      className={`p-3 rounded-xl border text-sm text-left transition-all ${skillLevel === 'casual'
+                        ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300'
+                        : 'border-border hover:border-teal-400 text-muted-foreground'
                         }`}
-                      >
-                        {n}★
-                      </button>
-                    ))}
+                    >
+                      🎉 Giao lưu vui vẻ - Cho người mới bắt đầu hoặc muốn chơi thoải mái
+                    </button>
+                    <button
+                      onClick={() => setSkillLevel('intermediate')}
+                      className={`p-3 rounded-xl border text-sm text-left transition-all ${skillLevel === 'intermediate'
+                        ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300'
+                        : 'border-border hover:border-teal-400 text-muted-foreground'
+                        }`}
+                    >
+                      ⚖️ Trung bình - Cho người có kinh nghiệm cơ bản
+                    </button>
+                    <button
+                      onClick={() => setSkillLevel('competitive')}
+                      className={`p-3 rounded-xl border text-sm text-left transition-all ${skillLevel === 'competitive'
+                        ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300'
+                        : 'border-border hover:border-teal-400 text-muted-foreground'
+                        }`}
+                    >
+                      🏆 Cạnh tranh - Cho người chơi chuyên nghiệp hoặc muốn thử thách
+                    </button>
                   </div>
-                  <p className="text-xs text-muted-foreground">Bấm để chọn khoảng trình độ</p>
                 </div>
 
                 {/* Players Needed */}

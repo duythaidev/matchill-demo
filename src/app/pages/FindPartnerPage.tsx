@@ -185,7 +185,7 @@ export function FindPartnerPage() {
 
   const handleGoToChat = () => {
     if (matchedGroup) {
-      navigate(`/chat/${matchedGroup.chatId}`);
+      navigate(`/chat/chat_private_1`);
     }
   };
 

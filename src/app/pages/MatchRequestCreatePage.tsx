@@ -24,10 +24,14 @@ const SPORTS = [
 
 const schema = z.object({
   sport: z.string().min(1, 'Chọn môn thể thao'),
+  target: z.enum(['teammate', 'opponent'], { required_error: 'Chọn mục tiêu tìm kiếm' }),
   date: z.string().min(1, 'Chọn ngày'),
   timeStart: z.string().min(1, 'Chọn giờ bắt đầu'),
   timeEnd: z.string().min(1, 'Chọn giờ kết thúc'),
-  playersNeeded: z.number().min(2).max(8),
+  skillLevel: z.enum(['casual', 'intermediate', 'competitive'], { required_error: 'Chọn trình độ mong muốn' }),
+  playersNeeded: z.number().min(1).max(8),
+  postToDiscover: z.boolean().default(false),
+  flexibleTime: z.boolean().default(false),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -37,7 +41,6 @@ export function MatchRequestCreatePage() {
   const { setCurrentRequest, setRequestId, setSuggestions, setLoading, setHasMatchedFromRequest } =
     useMatchStore();
   const [radiusKm, setRadiusKm] = useState(10);
-  const [skillRange, setSkillRange] = useState([2, 4]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
@@ -51,10 +54,14 @@ export function MatchRequestCreatePage() {
     resolver: zodResolver(schema),
     defaultValues: {
       sport: '',
+      target: 'teammate',
       date: today,
       timeStart: '07:00',
       timeEnd: '09:00',
-      playersNeeded: 2,
+      skillLevel: 'intermediate',
+      playersNeeded: 1,
+      postToDiscover: false,
+      flexibleTime: false,
     },
   });
 
@@ -63,24 +70,35 @@ export function MatchRequestCreatePage() {
     setLoading(true);
     try {
       const timeStart = `${data.date}T${data.timeStart}:00`;
-      const timeEnd = `${data.date}T${data.timeEnd}:00`;
+      const timeEnd = data.flexibleTime ? null : `${data.date}T${data.timeEnd}:00`;
+
+      // Map skill level to numbers
+      const skillMapping = {
+        casual: [1, 2],
+        intermediate: [2, 4],
+        competitive: [4, 5]
+      };
+      const [skillMin, skillMax] = skillMapping[data.skillLevel];
 
       const request = {
         sport: data.sport,
+        target: data.target,
         location: { lat: 10.776, lng: 106.7009 },
         radiusKm,
         timeStart,
         timeEnd,
-        skillMin: skillRange[0],
-        skillMax: skillRange[1],
+        skillMin,
+        skillMax,
         playersNeeded: data.playersNeeded,
+        postToDiscover: data.postToDiscover,
+        flexibleTime: data.flexibleTime,
       };
 
       const result = await matchApi.createMatchRequest(request);
       setCurrentRequest(request);
       setRequestId(result.requestId);
 
-      toast.loading('🔍 Đang tìm đồng đội phù hợp...', { id: 'finding' });
+      toast.loading('🔍 Đang tìm đối tác phù hợp...', { id: 'finding' });
 
       const suggestions = await matchApi.getMatchSuggestions(result.requestId, {
         sport: data.sport,
@@ -90,7 +108,7 @@ export function MatchRequestCreatePage() {
       toast.dismiss('finding');
       setSuggestions(suggestions);
       setHasMatchedFromRequest(true);
-      toast.success(`🎉 Tìm thấy ${suggestions.length} đồng đội phù hợp!`);
+      toast.success(`🎉 Tìm thấy ${suggestions.length} đối tác phù hợp!`);
       navigate('/discover');
     } catch {
       toast.error('Có lỗi xảy ra. Vui lòng thử lại!');
@@ -121,9 +139,9 @@ export function MatchRequestCreatePage() {
             <Swords className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1>Tạo Team Request</h1>
+            <h1>Tạo Match Request</h1>
             <p className="text-sm text-muted-foreground">
-              Hệ thống tự ghép đồng đội phù hợp cho bạn
+              Tạo yêu cầu tìm đồng đội hoặc đối thủ phù hợp
             </p>
           </div>
         </div>
@@ -136,38 +154,44 @@ export function MatchRequestCreatePage() {
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-6"
       >
-        {/* Sport Select */}
+        {/* Target Select */}
         <div className="space-y-3">
           <Label className="flex items-center gap-2">
-            <Star className="w-4 h-4 text-teal-600" />
-            Môn thể thao
+            <Users className="w-4 h-4 text-teal-600" />
+            Mục tiêu tìm kiếm
           </Label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <Controller
-              name="sport"
+              name="target"
               control={control}
               render={({ field }) => (
                 <>
-                  {SPORTS.map((s) => (
-                    <button
-                      key={s.value}
-                      type="button"
-                      onClick={() => field.onChange(s.value)}
-                      className={`p-3 rounded-xl border text-sm text-left transition-all ${
-                        field.value === s.value
-                          ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300'
-                          : 'border-border hover:border-teal-400 text-muted-foreground'
+                  <button
+                    type="button"
+                    onClick={() => field.onChange('teammate')}
+                    className={`p-3 rounded-xl border text-sm text-left transition-all ${field.value === 'teammate'
+                      ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300'
+                      : 'border-border hover:border-teal-400 text-muted-foreground'
                       }`}
-                    >
-                      {s.label}
-                    </button>
-                  ))}
+                  >
+                    👥 Tìm đồng đội
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => field.onChange('opponent')}
+                    className={`p-3 rounded-xl border text-sm text-left transition-all ${field.value === 'opponent'
+                      ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300'
+                      : 'border-border hover:border-teal-400 text-muted-foreground'
+                      }`}
+                  >
+                    ⚔️ Tìm đối thủ
+                  </button>
                 </>
               )}
             />
           </div>
-          {errors.sport && (
-            <p className="text-destructive text-xs">{errors.sport.message}</p>
+          {errors.target && (
+            <p className="text-destructive text-xs">{errors.target.message}</p>
           )}
         </div>
 
@@ -223,7 +247,31 @@ export function MatchRequestCreatePage() {
               </div>
               <div>
                 <Label className="text-sm text-muted-foreground mb-1.5 block">Giờ kết thúc</Label>
-                <Input type="time" {...register('timeEnd')} />
+                <Controller
+                  name="flexibleTime"
+                  control={control}
+                  render={({ field: flexibleField }) => (
+                    <div className="space-y-2">
+                      <Input
+                        type="time"
+                        {...register('timeEnd')}
+                        disabled={flexibleField.value}
+                      />
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id="flexibleTime"
+                          checked={flexibleField.value}
+                          onChange={(e) => flexibleField.onChange(e.target.checked)}
+                          className="rounded"
+                        />
+                        <Label htmlFor="flexibleTime" className="text-xs text-muted-foreground">
+                          Thời gian linh hoạt (bàn bạc sau khi match)
+                        </Label>
+                      </div>
+                    </div>
+                  )}
+                />
                 {errors.timeEnd && (
                   <p className="text-destructive text-xs mt-1">{errors.timeEnd.message}</p>
                 )}
@@ -232,28 +280,55 @@ export function MatchRequestCreatePage() {
           </div>
         </div>
 
-        {/* Skill Range */}
-        <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+        {/* Skill Level Select */}
+        <div className="space-y-3">
           <Label className="flex items-center gap-2">
             <Star className="w-4 h-4 text-amber-400" />
-            Trình độ đồng đội mong muốn:{' '}
-            <span className="text-teal-600 dark:text-teal-400 font-semibold">
-              {skillRange[0]}★ – {skillRange[1]}★
-            </span>
+            Trình độ mong muốn
           </Label>
-          <Slider
-            min={1}
-            max={5}
-            step={1}
-            value={skillRange}
-            onValueChange={(v) => setSkillRange(v)}
-            className="[&_[role=slider]]:bg-teal-600 [&_[role=slider]]:border-teal-600"
-          />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            {[1, 2, 3, 4, 5].map((n) => (
-              <span key={n}>{n}★</span>
-            ))}
+          <div className="grid grid-cols-1 gap-2">
+            <Controller
+              name="skillLevel"
+              control={control}
+              render={({ field }) => (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => field.onChange('casual')}
+                    className={`p-3 rounded-xl border text-sm text-left transition-all ${field.value === 'casual'
+                      ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300'
+                      : 'border-border hover:border-teal-400 text-muted-foreground'
+                      }`}
+                  >
+                    🎉 Giao lưu vui vẻ - Cho người mới bắt đầu hoặc muốn chơi thoải mái
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => field.onChange('intermediate')}
+                    className={`p-3 rounded-xl border text-sm text-left transition-all ${field.value === 'intermediate'
+                      ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300'
+                      : 'border-border hover:border-teal-400 text-muted-foreground'
+                      }`}
+                  >
+                    ⚖️ Trung bình - Cho người có kinh nghiệm cơ bản
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => field.onChange('competitive')}
+                    className={`p-3 rounded-xl border text-sm text-left transition-all ${field.value === 'competitive'
+                      ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300'
+                      : 'border-border hover:border-teal-400 text-muted-foreground'
+                      }`}
+                  >
+                    🏆 Cạnh tranh - Cho người chơi chuyên nghiệp hoặc muốn thử thách
+                  </button>
+                </>
+              )}
+            />
           </div>
+          {errors.skillLevel && (
+            <p className="text-destructive text-xs">{errors.skillLevel.message}</p>
+          )}
         </div>
 
         {/* Players Needed */}
@@ -272,8 +347,8 @@ export function MatchRequestCreatePage() {
                   variant="outline"
                   size="icon"
                   className="rounded-full"
-                  onClick={() => field.onChange(Math.max(2, field.value - 1))}
-                  disabled={field.value <= 2}
+                  onClick={() => field.onChange(Math.max(1, field.value - 1))}
+                  disabled={field.value <= 1}
                 >
                   –
                 </Button>
@@ -290,12 +365,36 @@ export function MatchRequestCreatePage() {
                 >
                   +
                 </Button>
-                <span className="text-sm text-muted-foreground">người (tối đa 8)</span>
               </div>
             )}
           />
           <p className="text-xs text-muted-foreground">
             💡 Khi team đủ người, group chat tự động được tạo cho cả đội!
+          </p>
+        </div>
+
+        {/* Post to Discover */}
+        <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+          <Controller
+            name="postToDiscover"
+            control={control}
+            render={({ field }) => (
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="postToDiscover"
+                  checked={field.value}
+                  onChange={(e) => field.onChange(e.target.checked)}
+                  className="rounded"
+                />
+                <Label htmlFor="postToDiscover" className="text-sm">
+                  Đăng request lên Discover
+                </Label>
+              </div>
+            )}
+          />
+          <p className="text-xs text-muted-foreground">
+            Nếu bật, request sẽ vừa dùng cho realtime matching vừa hiển thị trên trang Discover để thu hút thêm người tham gia.
           </p>
         </div>
 
@@ -309,12 +408,12 @@ export function MatchRequestCreatePage() {
           {isSubmitting ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              Đang tìm đồng đội...
+              Đang tìm đối tác...
             </>
           ) : (
             <>
               <Swords className="w-5 h-5" />
-              Tạo Team Request
+              Tạo Match Request
             </>
           )}
         </Button>

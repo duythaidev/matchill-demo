@@ -41,13 +41,13 @@ const CALENDAR_SLOTS = [
   { hour: '07:00', status: 'booked', venue: 'Nguyen Van Anh' },
   { hour: '08:00', status: 'booked', venue: 'Tran Thi Mai' },
   { hour: '09:00', status: 'booked', venue: 'Tran Thi Mai' },
-  { hour: '10:00', status: 'pending', venue: 'Le Minh Quan' },
+  { hour: '10:00', status: 'blocked', venue: 'Bảo trì' },
   { hour: '11:00', status: 'available', venue: '' },
   { hour: '12:00', status: 'available', venue: '' },
   { hour: '13:00', status: 'available', venue: '' },
   { hour: '14:00', status: 'booked', venue: 'Pham Duc Anh' },
   { hour: '15:00', status: 'booked', venue: 'Pham Duc Anh' },
-  { hour: '16:00', status: 'pending', venue: 'Hoang Thi Lan' },
+  { hour: '16:00', status: 'blocked', venue: 'Sự kiện riêng' },
   { hour: '17:00', status: 'available', venue: '' },
   { hour: '18:00', status: 'booked', venue: 'Vo Thanh Tung' },
   { hour: '19:00', status: 'booked', venue: 'Vo Thanh Tung' },
@@ -75,18 +75,21 @@ function CustomTooltip({ active, payload, label }: any) {
 }
 
 export function VenueDashboardPage() {
-  const { pendingBookingRequests, acceptBookingRequest, rejectBookingRequest } =
-    useBookingStore();
+  const { refundRequests, approveRefund, rejectRefund } = useBookingStore();
   const [withdrawLoading, setWithdrawLoading] = useState(false);
 
-  const handleAccept = (bookingId: string, userName: string) => {
-    acceptBookingRequest(bookingId);
-    toast.success(`✅ Đã xác nhận booking của ${userName}`);
+  const handleApproveRefund = (bookingId: string, userName: string, isWithin5Min: boolean) => {
+    approveRefund(bookingId);
+    if (isWithin5Min) {
+      toast.success(`✅ Đã hoàn tiền tự động cho ${userName}. Slot đã được mở lại.`);
+    } else {
+      toast.success(`✅ Đã xác nhận hoàn tiền thủ công cho ${userName}. Slot đã được cập nhật.`);
+    }
   };
 
-  const handleReject = (bookingId: string, userName: string) => {
-    rejectBookingRequest(bookingId);
-    toast(`❌ Đã từ chối booking của ${userName}`, { icon: '🚫' });
+  const handleRejectRefund = (bookingId: string, userName: string) => {
+    rejectRefund(bookingId);
+    toast(`❌ Đã từ chối yêu cầu hoàn tiền của ${userName}`, { icon: '🚫' });
   };
 
   const handleWithdraw = async () => {
@@ -132,8 +135,8 @@ export function VenueDashboardPage() {
             bg: 'bg-blue-50 dark:bg-blue-900/20',
           },
           {
-            label: 'Chờ xác nhận',
-            value: `${pendingBookingRequests.length}`,
+            label: 'Yêu cầu hoàn tiền',
+            value: `${refundRequests.length}`,
             icon: AlertCircle,
             cls: 'text-amber-600 dark:text-amber-400',
             bg: 'bg-amber-50 dark:bg-amber-900/20',
@@ -159,10 +162,10 @@ export function VenueDashboardPage() {
       <Tabs defaultValue="revenue">
         <TabsList className="mb-5">
           <TabsTrigger value="revenue">Doanh thu</TabsTrigger>
-          <TabsTrigger value="pending">
-            Yêu cầu đặt ({pendingBookingRequests.length})
+          <TabsTrigger value="refunds">
+            Yêu cầu hoàn tiền ({refundRequests.length})
           </TabsTrigger>
-          <TabsTrigger value="calendar">Lịch hôm nay</TabsTrigger>
+          <TabsTrigger value="calendar">Quản lý lịch</TabsTrigger>
         </TabsList>
 
         {/* Revenue Chart Tab */}
@@ -234,20 +237,20 @@ export function VenueDashboardPage() {
           </motion.div>
         </TabsContent>
 
-        {/* Pending Requests Tab */}
-        <TabsContent value="pending">
+        {/* Refunds Tab */}
+        <TabsContent value="refunds">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="space-y-3"
           >
-            {pendingBookingRequests.length === 0 ? (
+            {refundRequests.length === 0 ? (
               <div className="text-center py-16 text-muted-foreground">
                 <CheckCircle className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                <p>Không có yêu cầu đặt sân nào đang chờ</p>
+                <p>Không có yêu cầu hoàn tiền nào</p>
               </div>
             ) : (
-              pendingBookingRequests.map((req, i) => (
+              refundRequests.map((req, i) => (
                 <motion.div
                   key={req.bookingId}
                   initial={{ opacity: 0, x: -10 }}
@@ -261,10 +264,22 @@ export function VenueDashboardPage() {
                       <div className="flex items-center gap-2 mb-1">
                         <Badge
                           variant="secondary"
-                          className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-0 text-xs"
+                          className={`text-xs border-0 ${req.isWithin5Min
+                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                              : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                            }`}
                         >
-                          <Clock className="w-3 h-3 mr-1" />
-                          Chờ xác nhận
+                          {req.isWithin5Min ? (
+                            <>
+                              <Clock className="w-3 h-3 mr-1" />
+                              Tự động hoàn tiền
+                            </>
+                          ) : (
+                            <>
+                              <AlertCircle className="w-3 h-3 mr-1" />
+                              Cần xác nhận thủ công
+                            </>
+                          )}
                         </Badge>
                       </div>
                       <p className="font-medium">{req.userName}</p>
@@ -278,23 +293,28 @@ export function VenueDashboardPage() {
                         </span>
                       </div>
                       <p className="text-xs text-teal-600 dark:text-teal-400 font-medium mt-1">
-                        {req.amount.toLocaleString('vi-VN')}₫
+                        Hoàn tiền: {req.amount.toLocaleString('vi-VN')}₫
                       </p>
+                      {!req.isWithin5Min && (
+                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                          ⚠️ Vui lòng hoàn tiền thủ công cho khách trước khi xác nhận
+                        </p>
+                      )}
                     </div>
                     <div className="flex gap-2 shrink-0">
                       <Button
                         size="sm"
                         className="bg-teal-600 hover:bg-teal-700 text-white gap-1.5"
-                        onClick={() => handleAccept(req.bookingId, req.userName)}
+                        onClick={() => handleApproveRefund(req.bookingId, req.userName, req.isWithin5Min)}
                       >
                         <CheckCircle className="w-3.5 h-3.5" />
-                        Chấp nhận
+                        {req.isWithin5Min ? 'Hoàn tiền' : 'Xác nhận'}
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
                         className="text-destructive border-destructive/30 hover:bg-destructive/10 gap-1.5"
-                        onClick={() => handleReject(req.bookingId, req.userName)}
+                        onClick={() => handleRejectRefund(req.bookingId, req.userName)}
                       >
                         <XCircle className="w-3.5 h-3.5" />
                         Từ chối
@@ -307,25 +327,28 @@ export function VenueDashboardPage() {
           </motion.div>
         </TabsContent>
 
-        {/* Today's Calendar Tab */}
+        {/* Calendar Management Tab */}
         <TabsContent value="calendar">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="bg-card border border-border rounded-2xl p-5"
           >
-            <p className="font-medium mb-4">
-              Lịch hôm nay · Sky Court Badminton
-            </p>
+            <div className="flex items-center justify-between mb-4">
+              <p className="font-medium">Quản lý lịch sân thủ công</p>
+              <p className="text-sm text-muted-foreground">
+                {format(new Date(), 'dd/MM/yyyy')}
+              </p>
+            </div>
             <div className="flex gap-4 mb-4 text-xs text-muted-foreground flex-wrap">
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-3 rounded bg-emerald-200 dark:bg-emerald-700" />Trống
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded bg-amber-200 dark:bg-amber-700" />Chờ xác nhận
+                <div className="w-3 h-3 rounded bg-red-200 dark:bg-red-700" />Đã đặt
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded bg-red-200 dark:bg-red-700" />Đã đặt
+                <div className="w-3 h-3 rounded bg-gray-200 dark:bg-gray-700" />Khóa đặt
               </div>
             </div>
             <div className="space-y-2">
@@ -333,11 +356,13 @@ export function VenueDashboardPage() {
                 const colors = {
                   available: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-700',
                   booked: 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-700',
+                  blocked: 'bg-gray-50 border-gray-200 dark:bg-gray-900/20 dark:border-gray-700',
                   pending: 'bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-700',
                 };
                 const textColors = {
                   available: 'text-emerald-700 dark:text-emerald-400',
                   booked: 'text-red-700 dark:text-red-400',
+                  blocked: 'text-gray-700 dark:text-gray-400',
                   pending: 'text-amber-700 dark:text-amber-400',
                 };
                 return (
@@ -360,25 +385,40 @@ export function VenueDashboardPage() {
                         </span>
                       )}
                     </div>
-                    {slot.status === 'pending' && (
-                      <div className="flex gap-1.5">
-                        <Button
-                          size="sm"
-                          className="h-6 px-2 text-xs bg-teal-600 hover:bg-teal-700 text-white"
-                          onClick={() => toast.success(`✅ Xác nhận slot ${slot.hour}`)}
-                        >
-                          ✓
-                        </Button>
+                    <div className="flex gap-1.5">
+                      {slot.status === 'available' && (
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-6 px-2 text-xs text-destructive"
-                          onClick={() => toast(`Đã từ chối slot ${slot.hour}`)}
+                          className="h-6 px-2 text-xs text-gray-600 border-gray-300 hover:bg-gray-100 dark:text-gray-400 dark:border-gray-600 dark:hover:bg-gray-900/30"
+                          onClick={() => toast.success(`Đã khóa slot ${slot.hour}`)}
                         >
-                          ✕
+                          Khóa
                         </Button>
-                      </div>
-                    )}
+                      )}
+                      {slot.status === 'blocked' && (
+                        <>
+                          <Button
+                            size="sm"
+                            className="h-6 px-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+                            onClick={() => toast.success(`Đã mở lại slot ${slot.hour}`)}
+                          >
+                            Mở
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-6 px-2 text-xs text-destructive border-destructive/30 hover:bg-destructive/10"
+                            onClick={() => toast.success(`Đã xóa khóa slot ${slot.hour}`)}
+                          >
+                            Xóa
+                          </Button>
+                        </>
+                      )}
+                      {slot.status === 'booked' && (
+                        <span className="text-xs text-muted-foreground">Đã đặt</span>
+                      )}
+                    </div>
                   </motion.div>
                 );
               })}

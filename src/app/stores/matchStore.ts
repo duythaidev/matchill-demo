@@ -2,14 +2,17 @@ import { create } from 'zustand';
 
 export interface MatchRequest {
   sport: string;
+  target?: 'teammate' | 'opponent';
   location: { lat: number; lng: number };
   radiusKm: number;
   timeStart: string;
-  timeEnd: string;
+  timeEnd: string | null;
   skillMin: number;
   skillMax: number;
   playersNeeded: number;
   description?: string;
+  postToDiscover?: boolean;
+  flexibleTime?: boolean;
 }
 
 export interface MatchSuggestion {
