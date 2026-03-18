@@ -125,7 +125,7 @@ export function MatchRequestCreatePage() {
         requestId: result.requestId,
         leaderId: result.leaderId,
         leaderName: "Bạn", // replace bằng currentUser.fullName nếu có
-        leaderAvatar: "https://i.pravatar.cc/150?u=me", // replace bằng currentUser.avatar nếu có
+        leaderAvatar: "https://images.unsplash.com/photo-1630610280030-da8fbc7ca25a?w=200&h=200&fit=crop", // replace bằng currentUser.avatar nếu có
         sport: data.sport,
         timeStart: timeStart,
         timeEnd: timeEnd ?? timeStart, // fallback nếu flexibleTime
@@ -136,7 +136,7 @@ export function MatchRequestCreatePage() {
           {
             userId: result.leaderId,
             name: "Bạn",
-            avatar: "https://i.pravatar.cc/150?u=me",
+            avatar: "https://images.unsplash.com/photo-1630610280030-da8fbc7ca25a?w=200&h=200&fit=crop",
             skill: Math.round((skillMin + skillMax) / 2),
           },
         ],
@@ -530,3 +530,6 @@ export function MatchRequestCreatePage() {
     </div>
   );
 }
+
+
+

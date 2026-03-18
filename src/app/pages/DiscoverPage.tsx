@@ -442,7 +442,7 @@ export function DiscoverPage() {
   // Switch to "suggested" tab after creating a team request (now just load data)
   useEffect(() => {
     if (hasMatchedFromRequest) {
-      toast.success('✅ Đây là danh sách đồng đội phù hợp với yêu cầu của bạn!', { duration: 3500 });
+      toast.success('Đây là danh sách đồng đội phù hợp với yêu cầu của bạn!', { duration: 3500 });
     }
   }, [hasMatchedFromRequest]);
 
@@ -528,7 +528,6 @@ export function DiscoverPage() {
       {/* Search + Filter bar */}
       <div className="flex gap-2 mb-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
 
           {search && (
             <button
