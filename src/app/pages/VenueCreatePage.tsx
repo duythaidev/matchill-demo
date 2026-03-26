@@ -41,8 +41,7 @@ const AMENITIES: { key: string; icon: string; label: string }[] = [
 ];
 
 const CITIES = [
-  'TP. Hồ Chí Minh', 'Hà Nội', 'Đà Nẵng', 'Cần Thơ', 'Nha Trang',
-  'Huế', 'Vũng Tàu', 'Bình Dương', 'Đồng Nai', 'Long An',
+  'Hà Nội',
 ];
 
 const schema = z.object({
@@ -82,7 +81,7 @@ export function VenueCreatePage() {
     defaultValues: {
       type: 'indoor',
       sport: '',
-      city: 'TP. Hồ Chí Minh',
+      city: 'Hà Nội',
       pricePerHour: 100000,
     },
   });
@@ -186,7 +185,7 @@ export function VenueCreatePage() {
               <Label className="flex items-center gap-1.5 mb-1.5 text-sm">
                 <MapPin className="w-3.5 h-3.5" /> Địa chỉ *
               </Label>
-              <Input placeholder="VD: 123 Nguyen Trai, Quận 1" {...register('address')} />
+              <Input placeholder="VD: Thạch Hòa, Thạch Thất, Hà Nội" {...register('address')} />
               {errors.address && <p className="text-destructive text-xs mt-1">{errors.address.message}</p>}
             </div>
             <div>

@@ -341,7 +341,7 @@ export function MarketplacePostPage() {
               <MapPin className="w-3.5 h-3.5 text-teal-600" /> Vị trí <span className="text-destructive">*</span>
             </Label>
             <Input
-              placeholder="Vd: Quận 7, TP. Hồ Chí Minh"
+              placeholder="Vd: Thạch Hòa, Thạch Thất, Hà Nội"
               defaultValue={currentUser?.location.city || ''}
               {...register('location')}
             />

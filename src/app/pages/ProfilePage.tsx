@@ -342,7 +342,7 @@ export function ProfilePage() {
                   {/* City */}
                   <div className="space-y-1.5">
                     <Label className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" />Thành phố</Label>
-                    <Input placeholder="TP. Hồ Chí Minh" {...register('city')} />
+                    <Input placeholder="Hà Nội" {...register('city')} />
                     {errors.city && <p className="text-xs text-destructive">{errors.city.message}</p>}
                   </div>
 

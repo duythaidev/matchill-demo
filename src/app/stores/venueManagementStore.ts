@@ -215,8 +215,8 @@ const INITIAL_VENUES: ManagedVenue[] = [
   {
     id: 'v1',
     name: 'Sky Court Badminton',
-    address: '123 Nguyen Trai, Quận 1',
-    city: 'TP. Hồ Chí Minh',
+    address: 'Khu công nghệ cao Hòa Lạc, Thạch Thất',
+    city: 'Hà Nội',
     images: [
       'https://images.unsplash.com/photo-1771854400123-2a23cb720c04?w=800&fit=crop',
       'https://images.unsplash.com/photo-1760599348992-ce335f8036c3?w=800&fit=crop',
@@ -236,9 +236,9 @@ const INITIAL_VENUES: ManagedVenue[] = [
   },
   {
     id: 'v3',
-    name: 'Pickleball Zone',
-    address: '78 Le Van Viet, Thủ Đức',
-    city: 'TP. Hồ Chí Minh',
+    name: 'Pickleball Zone Hòa Lạc',
+    address: 'Thạch Hòa, Thạch Thất',
+    city: 'Hà Nội',
     images: [
       'https://images.unsplash.com/photo-1679261546032-4a2770d2f360?w=800&fit=crop',
       'https://images.unsplash.com/photo-1771854400123-2a23cb720c04?w=800&fit=crop',
@@ -249,7 +249,7 @@ const INITIAL_VENUES: ManagedVenue[] = [
     reviewCount: 54,
     type: 'outdoor',
     sport: 'Pickleball',
-    description: 'Khu vui chơi pickleball đầu tiên tại TP.HCM. Có 6 sân tiêu chuẩn, mái che chống nắng. Thuê vợt và bóng tại chỗ.',
+    description: 'Khu vui chơi pickleball đầu tiên tại Thạch Thất. Có 6 sân tiêu chuẩn, mái che chống nắng. Thuê vợt và bóng tại chỗ.',
     status: 'active',
     ownerId: 'owner_1',
     totalDailySlots: 16,
@@ -258,9 +258,9 @@ const INITIAL_VENUES: ManagedVenue[] = [
   },
   {
     id: 'v6',
-    name: 'Pro Badminton Club',
-    address: '33 Dien Bien Phu, Bình Thạnh',
-    city: 'TP. Hồ Chí Minh',
+    name: 'Pro Badminton Club Thạch Thất',
+    address: 'Thạch Hòa, Thạch Thất',
+    city: 'Hà Nội',
     images: [
       'https://images.unsplash.com/photo-1545255678-30015d3842b0?w=800&fit=crop',
       'https://images.unsplash.com/photo-1617696618050-b0fef0c666af?w=800&fit=crop',

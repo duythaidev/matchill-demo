@@ -156,7 +156,7 @@ const defaultMyBookings: Booking[] = [
     bookingId: 'bk_001',
     venueId: 'v1',
     venueName: 'Sky Court Badminton',
-    venueAddress: '123 Nguyen Trai, Quận 1, TP.HCM',
+    venueAddress: 'Khu công nghệ cao Hòa Lạc, Thạch Thất, Hà Nội',
     venueImage:
       'https://images.unsplash.com/photo-1771854400123-2a23cb720c04?w=400&fit=crop',
     start: '2026-03-20T08:00:00',
@@ -170,7 +170,7 @@ const defaultMyBookings: Booking[] = [
     bookingId: 'bk_002',
     venueId: 'v2',
     venueName: 'VTF Tennis Academy',
-    venueAddress: '45 Vo Nguyen Giap, Quận 2, TP.HCM',
+    venueAddress: 'Đại lộ Thăng Long, Thạch Hòa, Thạch Thất, Hà Nội',
     venueImage:
       'https://images.unsplash.com/photo-1762423570069-6926efe1232a?w=400&fit=crop',
     start: '2026-03-10T09:00:00',
@@ -184,7 +184,7 @@ const defaultMyBookings: Booking[] = [
     bookingId: 'bk_003',
     venueId: 'v3',
     venueName: 'Pickleball Zone',
-    venueAddress: '78 Le Van Viet, Thủ Đức, TP.HCM',
+    venueAddress: 'Thạch Hòa, Thạch Thất, Hà Nội',
     venueImage:
       'https://images.unsplash.com/photo-1762423570069-6926efe1232a?w=400&fit=crop',
     start: '2026-03-05T14:00:00',

@@ -47,7 +47,7 @@ const MOCK_ITEMS: MarketplaceItem[] = [
       'https://images.unsplash.com/photo-1771854399722-240c2accbd0c?w=600&fit=crop',
       'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=600&fit=crop',
     ],
-    location: 'Quận 7, TP.HCM',
+    location: 'Thạch Hòa, Thạch Thất',
     distanceKm: 1.2,
     sellerId: 'user_demo',
     sellerName: 'Nguyen Van Demo',
@@ -69,7 +69,7 @@ const MOCK_ITEMS: MarketplaceItem[] = [
     images: [
       'https://images.unsplash.com/photo-1615326882458-e0d45b097f55?w=600&fit=crop',
     ],
-    location: 'Bình Thạnh, TP.HCM',
+    location: 'Thạch Thất, Hà Nội',
     distanceKm: 3.7,
     sellerId: 'p1',
     sellerName: 'Nguyen Van Anh',
@@ -91,7 +91,7 @@ const MOCK_ITEMS: MarketplaceItem[] = [
     images: [
       'https://images.unsplash.com/photo-1739132268718-53d64165d29a?w=600&fit=crop',
     ],
-    location: 'Quận 1, TP.HCM',
+    location: 'Hà Nội',
     distanceKm: 5.1,
     sellerId: 'p2',
     sellerName: 'Tran Thi Mai',
@@ -112,7 +112,7 @@ const MOCK_ITEMS: MarketplaceItem[] = [
     images: [
       'https://images.unsplash.com/photo-1717663625786-71e921774222?w=600&fit=crop',
     ],
-    location: 'Gò Vấp, TP.HCM',
+    location: 'Thạch Thất',
     distanceKm: 7.3,
     sellerId: 'p3',
     sellerName: 'Le Minh Quan',
@@ -134,7 +134,7 @@ const MOCK_ITEMS: MarketplaceItem[] = [
     images: [
       'https://images.unsplash.com/photo-1710772099352-f8fbb7b30977?w=600&fit=crop',
     ],
-    location: 'Quận 2, TP.HCM',
+    location: 'Thạch Hòa, Thạch Thất',
     distanceKm: 4.0,
     sellerId: 'p2',
     sellerName: 'Tran Thi Mai',
@@ -156,7 +156,7 @@ const MOCK_ITEMS: MarketplaceItem[] = [
     images: [
       'https://images.unsplash.com/photo-1765791277994-33e886a83a9d?w=600&fit=crop',
     ],
-    location: 'Quận 3, TP.HCM',
+    location: 'Hà Nội',
     distanceKm: 2.5,
     sellerId: 'user_demo',
     sellerName: 'Nguyen Van Demo',
@@ -178,7 +178,7 @@ const MOCK_ITEMS: MarketplaceItem[] = [
     images: [
       'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=600&fit=crop',
     ],
-    location: 'Nhà Bè, TP.HCM',
+    location: 'Thạch Hòa',
     distanceKm: 11.2,
     sellerId: 'p3',
     sellerName: 'Le Minh Quan',
@@ -200,7 +200,7 @@ const MOCK_ITEMS: MarketplaceItem[] = [
     images: [
       'https://images.unsplash.com/photo-1772133720696-d983b128c23e?w=600&fit=crop',
     ],
-    location: 'Bình Dương',
+    location: 'Hà Nội',
     distanceKm: 18.5,
     sellerId: 'p1',
     sellerName: 'Nguyen Van Anh',
@@ -221,7 +221,7 @@ const MOCK_ITEMS: MarketplaceItem[] = [
     images: [
       'https://images.unsplash.com/photo-1771854399722-240c2accbd0c?w=600&fit=crop&sat=-100',
     ],
-    location: 'Tân Bình, TP.HCM',
+    location: 'Thạch Thất',
     distanceKm: 6.8,
     sellerId: 'p4',
     sellerName: 'Hoang Thi Lan',
@@ -243,7 +243,7 @@ const MOCK_ITEMS: MarketplaceItem[] = [
     images: [
       'https://images.unsplash.com/photo-1739132268718-53d64165d29a?w=600&fit=crop&hue=220',
     ],
-    location: 'Quận 10, TP.HCM',
+    location: 'Hà Nội',
     distanceKm: 4.5,
     sellerId: 'user_demo',
     sellerName: 'Nguyen Van Demo',
@@ -265,7 +265,7 @@ const MOCK_ITEMS: MarketplaceItem[] = [
     images: [
       'https://images.unsplash.com/photo-1717663625786-71e921774222?w=600&fit=crop&sat=-20',
     ],
-    location: 'Quận 5, TP.HCM',
+    location: 'Thạch Hòa, Thạch Thất',
     distanceKm: 3.2,
     sellerId: 'p2',
     sellerName: 'Tran Thi Mai',

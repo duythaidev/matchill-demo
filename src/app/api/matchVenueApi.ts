@@ -189,7 +189,7 @@ export const MOCK_OPEN_TEAMS: OpenTeam[] = [
     slotsLeft: 3,
     totalSlots: 5,
     distanceKm: 1.4,
-    description: 'Tìm 3 người chơi bóng 5 người cuối tuần. Khu vực Quận 7, sân cỏ nhân tạo. Trình độ phong trào vui vẻ là được!',
+    description: 'Tìm 3 người chơi bóng 5 người cuối tuần. Khu vực Thạch Hòa, sân cỏ nhân tạo. Trình độ phong trào vui vẻ là được!',
     members: [
       { userId: 'p6', name: 'Vo Thanh Tung', avatar: 'https://images.unsplash.com/photo-1617696618050-b0fef0c666af?w=200&h=200&fit=crop&seed=6', skill: 3 },
       { userId: 'p10', name: 'Tran Van Binh', avatar: 'https://images.unsplash.com/photo-1630610280030-da8fbc7ca25a?w=200&h=200&fit=crop&seed=10', skill: 4 },
@@ -207,7 +207,7 @@ export const MOCK_OPEN_TEAMS: OpenTeam[] = [
     slotsLeft: 2,
     totalSlots: 4,
     distanceKm: 2.1,
-    description: 'Đội cầu lông doubles đang cần thêm 2 người. Trình độ từ 3★ trở lên. Sân Sky Court Q1.',
+    description: 'Đội cầu lông doubles đang cần thêm 2 người. Trình độ từ 3★ trở lên. Sân Sky Court Hòa Lạc.',
     members: [
       { userId: 'p1', name: 'Nguyen Van Anh', avatar: 'https://images.unsplash.com/photo-1617696618050-b0fef0c666af?w=200&h=200&fit=crop', skill: 4 },
       { userId: 'p9', name: 'Bui Thi Hoa', avatar: 'https://images.unsplash.com/photo-1659081443046-268bee889587?w=200&h=200&fit=crop&seed=9', skill: 3 },
@@ -293,7 +293,7 @@ export const MOCK_VENUES: Venue[] = [
   {
     id: 'v1',
     name: 'Sky Court Badminton',
-    address: '123 Nguyen Trai, Quận 1, TP.HCM',
+    address: 'Khu công nghệ cao Hòa Lạc, Thạch Thất, Hà Nội',
     images: [
       'https://images.unsplash.com/photo-1771854400123-2a23cb720c04?w=800&fit=crop',
       'https://images.unsplash.com/photo-1760599348992-ce335f8036c3?w=800&fit=crop',
@@ -312,8 +312,8 @@ export const MOCK_VENUES: Venue[] = [
   },
   {
     id: 'v2',
-    name: 'VTF Tennis Academy',
-    address: '45 Vo Nguyen Giap, Quận 2, TP.HCM',
+    name: 'Hòa Lạc Tennis Center',
+    address: 'Đại lộ Thăng Long, Thạch Hòa, Thạch Thất, Hà Nội',
     images: [
       'https://images.unsplash.com/photo-1762423570069-6926efe1232a?w=800&fit=crop',
       'https://images.unsplash.com/photo-1761286753856-2f39b4413c1c?w=800&fit=crop',
@@ -332,8 +332,8 @@ export const MOCK_VENUES: Venue[] = [
   },
   {
     id: 'v3',
-    name: 'Pickleball Zone',
-    address: '78 Le Van Viet, Thủ Đức, TP.HCM',
+    name: 'Pickleball Zone Hòa Lạc',
+    address: 'Thạch Hòa, Thạch Thất, Hà Nội',
     images: [
       'https://images.unsplash.com/photo-1762423570069-6926efe1232a?w=800&fit=crop',
       'https://images.unsplash.com/photo-1771854400123-2a23cb720c04?w=800&fit=crop',
@@ -346,13 +346,13 @@ export const MOCK_VENUES: Venue[] = [
     sport: 'Pickleball',
     reviewCount: 54,
     description:
-      'Khu vui chơi pickleball đầu tiên tại TP.HCM. Có 6 sân tiêu chuẩn, mái che chống nắng, thuê vợt và bóng.',
+      'Khu vui chơi pickleball đầu tiên tại Thạch Thất. Có 6 sân tiêu chuẩn, mái che chống nắng, thuê vợt và bóng.',
     ownerId: 'owner_1',
   },
   {
     id: 'v4',
-    name: 'Champion Football Field',
-    address: '200 Nguyen Xien, Quận 7, TP.HCM',
+    name: 'Sân bóng Hòa Lạc',
+    address: 'Khu CNC Hòa Lạc, Thạch Thất, Hà Nội',
     images: [
       'https://images.unsplash.com/photo-1652085155924-ae8b2c414c80?w=800&fit=crop',
       'https://images.unsplash.com/photo-1760599348992-ce335f8036c3?w=800&fit=crop',
@@ -370,8 +370,8 @@ export const MOCK_VENUES: Venue[] = [
   },
   {
     id: 'v5',
-    name: 'Aqua Sports Center',
-    address: '15 Dien Bien Phu, Quận 3, TP.HCM',
+    name: 'Aqua Sports Stadium',
+    address: 'Đại học FPT, Thạch Hòa, Thạch Thất, Hà Nội',
     images: [
       'https://images.unsplash.com/photo-1730244548329-4ae2f4fcaa7c?w=800&fit=crop',
       'https://images.unsplash.com/photo-1760599348992-ce335f8036c3?w=800&fit=crop',
@@ -389,8 +389,8 @@ export const MOCK_VENUES: Venue[] = [
   },
   {
     id: 'v6',
-    name: 'Pro Badminton Club',
-    address: '33 Dien Bien Phu, Binh Thanh, TP.HCM',
+    name: 'Pro Badminton Club Thạch Thất',
+    address: 'Thạch Hòa, Thạch Thất, Hà Nội',
     images: [
       'https://images.unsplash.com/photo-1771854400123-2a23cb720c04?w=800&fit=crop',
       'https://images.unsplash.com/photo-1617696618050-b0fef0c666af?w=800&fit=crop',
