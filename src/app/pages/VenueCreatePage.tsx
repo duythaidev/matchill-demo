@@ -5,92 +5,149 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
-  ArrowLeft,
-  Loader2,
-  Building2,
-  MapPin,
-  Image as ImageIcon,
-  DollarSign,
-  CheckSquare,
+  ArrowLeft, Loader2, Building2, MapPin, Image as ImageIcon,
+  DollarSign, CheckSquare, Layers,
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
-import { useBookingStore } from '../stores/bookingStore';
-import { venueApi } from '../api/matchVenueApi';
+import { useVenueManagementStore, type ManagedVenue } from '../stores/venueManagementStore';
+import { useAuthStore } from '../stores/authStore';
 import toast from 'react-hot-toast';
 
-const SPORTS = ['Badminton', 'Tennis', 'Pickleball', 'Football', 'Table Tennis', 'Swimming'];
-const AMENITIES = ['Parking', 'Shower', 'AC', 'Water', 'Locker', 'WC', 'Coach', 'Café', 'Wifi', 'Floodlight'];
+const SPORTS = [
+  { value: 'Badminton', icon: '🏸' },
+  { value: 'Tennis', icon: '🎾' },
+  { value: 'Pickleball', icon: '🏓' },
+  { value: 'Football', icon: '⚽' },
+  { value: 'Basketball', icon: '🏀' },
+  { value: 'Swimming', icon: '🏊' },
+];
+
+const AMENITIES: { key: string; icon: string; label: string }[] = [
+  { key: 'Parking', icon: '🅿️', label: 'Bãi đỗ xe' },
+  { key: 'Shower', icon: '🚿', label: 'Phòng tắm' },
+  { key: 'AC', icon: '❄️', label: 'Điều hòa' },
+  { key: 'Water', icon: '💧', label: 'Nước uống' },
+  { key: 'Locker', icon: '🔐', label: 'Tủ khóa' },
+  { key: 'WC', icon: '🚻', label: 'WC' },
+  { key: 'Coach', icon: '👨‍🏫', label: 'HLV' },
+  { key: 'Café', icon: '☕', label: 'Café' },
+  { key: 'Wifi', icon: '📶', label: 'WiFi' },
+  { key: 'Floodlight', icon: '💡', label: 'Đèn sân' },
+  { key: 'Paddle Rental', icon: '🏓', label: 'Thuê vợt' },
+  { key: 'Roof', icon: '🏠', label: 'Mái che' },
+];
+
+const CITIES = [
+  'TP. Hồ Chí Minh', 'Hà Nội', 'Đà Nẵng', 'Cần Thơ', 'Nha Trang',
+  'Huế', 'Vũng Tàu', 'Bình Dương', 'Đồng Nai', 'Long An',
+];
 
 const schema = z.object({
   name: z.string().min(3, 'Tên sân phải có ít nhất 3 ký tự'),
   address: z.string().min(5, 'Địa chỉ phải có ít nhất 5 ký tự'),
+  city: z.string().min(1, 'Chọn thành phố'),
   sport: z.string().min(1, 'Chọn môn thể thao'),
   type: z.enum(['indoor', 'outdoor']),
-  pricePerHour: z.number().min(10000, 'Giá tối thiểu 10,000₫'),
+  pricePerHour: z.number().min(10000, 'Giá tối thiểu 10,000₫').max(2000000),
   description: z.string().optional(),
   imageUrls: z.string().optional(),
 });
 
 type FormData = z.infer<typeof schema>;
 
+const DEFAULT_IMAGES = [
+  'https://images.unsplash.com/photo-1771854400123-2a23cb720c04?w=800&fit=crop',
+  'https://images.unsplash.com/photo-1760599348992-ce335f8036c3?w=800&fit=crop',
+];
+
 export function VenueCreatePage() {
   const navigate = useNavigate();
-  const { addVenue } = useBookingStore();
+  const { addManagedVenue } = useVenueManagementStore();
+  const currentUser = useAuthStore((s) => s.currentUser);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(DEFAULT_IMAGES[0]);
 
   const {
     register,
     handleSubmit,
     control,
+    watch,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       type: 'indoor',
       sport: '',
+      city: 'TP. Hồ Chí Minh',
       pricePerHour: 100000,
     },
   });
 
-  const toggleAmenity = (a: string) => {
+  const watchedPrice = watch('pricePerHour');
+
+  const toggleAmenity = (key: string) => {
     setSelectedAmenities((prev) =>
-      prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]
+      prev.includes(key) ? prev.filter((x) => x !== key) : [...prev, key]
     );
   };
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
-    try {
-      const imageUrls = data.imageUrls
-        ? data.imageUrls.split('\n').map((u) => u.trim()).filter(Boolean)
-        : [
-            'https://images.unsplash.com/photo-1771854400123-2a23cb720c04?w=800&fit=crop',
-          ];
+    await new Promise((r) => setTimeout(r, 800)); // simulate API
 
-      const venue = await venueApi.createVenue({
-        name: data.name,
-        address: data.address,
-        sport: data.sport,
-        type: data.type,
-        pricePerHour: data.pricePerHour,
-        description: data.description,
-        amenities: selectedAmenities,
-        images: imageUrls,
-      });
+    const rawUrls = data.imageUrls
+      ? data.imageUrls.split('\n').map((u) => u.trim()).filter(Boolean)
+      : [];
+    const images = rawUrls.length > 0 ? rawUrls : DEFAULT_IMAGES;
 
-      addVenue(venue);
-      toast.success('🎉 Tạo sân thành công!');
-      navigate('/my-venues');
-    } catch {
-      toast.error('Có lỗi xảy ra, vui lòng thử lại!');
-    } finally {
-      setIsSubmitting(false);
-    }
+    const newVenue: ManagedVenue = {
+      id: `v${Date.now()}`,
+      name: data.name,
+      address: data.address,
+      city: data.city,
+      images,
+      amenities: selectedAmenities,
+      pricePerHour: data.pricePerHour,
+      rating: 0,
+      reviewCount: 0,
+      type: data.type,
+      sport: data.sport,
+      description: data.description ?? '',
+      status: 'active',
+      ownerId: currentUser?.uid ?? 'owner_1',
+      totalDailySlots: 16,
+      availableTodaySlots: 16,
+      createdAt: new Date().toISOString().slice(0, 10),
+    };
+
+    addManagedVenue(newVenue);
+    setIsSubmitting(false);
+    toast.success('🎉 Tạo sân thành công! Sân đã sẵn sàng nhận đặt chỗ.');
+    navigate('/my-venues');
   };
+
+  // Section wrapper
+  const Section = ({
+    icon: Icon,
+    title,
+    children,
+  }: {
+    icon: React.ElementType;
+    title: string;
+    children: React.ReactNode;
+  }) => (
+    <div className="bg-card border border-border rounded-xl p-4 space-y-4">
+      <div className="flex items-center gap-2 pb-1 border-b border-border">
+        <Icon className="w-4 h-4 text-teal-600" />
+        <p className="font-medium text-sm">{title}</p>
+      </div>
+      {children}
+    </div>
+  );
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-xl">
@@ -105,7 +162,7 @@ export function VenueCreatePage() {
         </Button>
         <div>
           <h1>Tạo sân mới</h1>
-          <p className="text-sm text-muted-foreground">Điền thông tin sân thể thao</p>
+          <p className="text-sm text-muted-foreground">Điền đầy đủ thông tin để bắt đầu nhận đặt chỗ</p>
         </div>
       </motion.div>
 
@@ -114,64 +171,76 @@ export function VenueCreatePage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
         onSubmit={handleSubmit(onSubmit)}
-        className="space-y-6"
+        className="space-y-5"
       >
         {/* Basic Info */}
-        <div className="bg-card border border-border rounded-xl p-4 space-y-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Building2 className="w-4 h-4 text-teal-600" />
-            <p className="font-medium">Thông tin cơ bản</p>
-          </div>
-
+        <Section icon={Building2} title="Thông tin cơ bản">
           <div>
             <Label className="mb-1.5 block text-sm">Tên sân *</Label>
             <Input placeholder="VD: Sky Court Badminton" {...register('name')} />
             {errors.name && <p className="text-destructive text-xs mt-1">{errors.name.message}</p>}
           </div>
 
-          <div>
-            <Label className="flex items-center gap-1.5 mb-1.5 text-sm">
-              <MapPin className="w-3.5 h-3.5" />
-              Địa chỉ *
-            </Label>
-            <Input placeholder="VD: 123 Nguyen Trai, Quận 1, TP.HCM" {...register('address')} />
-            {errors.address && <p className="text-destructive text-xs mt-1">{errors.address.message}</p>}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <Label className="flex items-center gap-1.5 mb-1.5 text-sm">
+                <MapPin className="w-3.5 h-3.5" /> Địa chỉ *
+              </Label>
+              <Input placeholder="VD: 123 Nguyen Trai, Quận 1" {...register('address')} />
+              {errors.address && <p className="text-destructive text-xs mt-1">{errors.address.message}</p>}
+            </div>
+            <div>
+              <Label className="mb-1.5 block text-sm">Thành phố *</Label>
+              <Controller
+                name="city"
+                control={control}
+                render={({ field }) => (
+                  <select
+                    {...field}
+                    className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  >
+                    {CITIES.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                )}
+              />
+            </div>
           </div>
 
           <div>
-            <Label className="mb-1.5 block text-sm">Mô tả</Label>
+            <Label className="mb-1.5 block text-sm">Mô tả ngắn</Label>
             <Textarea
-              placeholder="Mô tả về sân, tiện ích đặc biệt..."
+              placeholder="Mô tả về sân, tiện ích đặc biệt, lưu ý cho người đặt..."
               rows={3}
               {...register('description')}
             />
           </div>
-        </div>
+        </Section>
 
         {/* Sport + Type */}
-        <div className="bg-card border border-border rounded-xl p-4 space-y-4">
-          <p className="font-medium">Loại sân</p>
-
+        <Section icon={Layers} title="Loại sân">
           <div>
             <Label className="mb-2 block text-sm">Môn thể thao *</Label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <Controller
                 name="sport"
                 control={control}
                 render={({ field }) => (
                   <>
-                    {SPORTS.map((s) => (
+                    {SPORTS.map(({ value, icon }) => (
                       <button
-                        key={s}
+                        key={value}
                         type="button"
-                        onClick={() => field.onChange(s)}
-                        className={`p-2 rounded-lg border text-sm transition-all text-left ${
-                          field.value === s
+                        onClick={() => field.onChange(value)}
+                        className={`p-2.5 rounded-xl border text-sm transition-all flex items-center gap-2 ${
+                          field.value === value
                             ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300'
                             : 'border-border text-muted-foreground hover:border-teal-400'
                         }`}
                       >
-                        {s}
+                        <span>{icon}</span>
+                        <span className="text-xs">{value}</span>
                       </button>
                     ))}
                   </>
@@ -182,7 +251,7 @@ export function VenueCreatePage() {
           </div>
 
           <div>
-            <Label className="mb-2 block text-sm">Hình thức sân *</Label>
+            <Label className="mb-2 block text-sm">Hình thức *</Label>
             <div className="flex gap-3">
               <Controller
                 name="type"
@@ -190,20 +259,21 @@ export function VenueCreatePage() {
                 render={({ field }) => (
                   <>
                     {[
-                      { val: 'indoor', label: '🏠 Trong nhà' },
-                      { val: 'outdoor', label: '🌳 Ngoài trời' },
-                    ].map(({ val, label }) => (
+                      { val: 'indoor', label: '🏠 Trong nhà', desc: 'Có mái che' },
+                      { val: 'outdoor', label: '🌳 Ngoài trời', desc: 'Sân hở' },
+                    ].map(({ val, label, desc }) => (
                       <button
                         key={val}
                         type="button"
                         onClick={() => field.onChange(val)}
-                        className={`flex-1 py-2 rounded-lg border text-sm transition-all ${
+                        className={`flex-1 py-3 px-3 rounded-xl border text-sm transition-all text-left ${
                           field.value === val
                             ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300'
                             : 'border-border text-muted-foreground hover:border-teal-400'
                         }`}
                       >
-                        {label}
+                        <div className="font-medium">{label}</div>
+                        <div className="text-xs mt-0.5 opacity-70">{desc}</div>
                       </button>
                     ))}
                   </>
@@ -211,69 +281,106 @@ export function VenueCreatePage() {
               />
             </div>
           </div>
-        </div>
+        </Section>
 
         {/* Amenities */}
-        <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <CheckSquare className="w-4 h-4 text-teal-600" />
-            <p className="font-medium">Tiện ích</p>
-          </div>
+        <Section icon={CheckSquare} title="Tiện ích sân">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {AMENITIES.map((a) => (
+            {AMENITIES.map(({ key, icon, label }) => (
               <button
-                key={a}
+                key={key}
                 type="button"
-                onClick={() => toggleAmenity(a)}
-                className={`py-2 px-3 rounded-lg border text-sm transition-all text-left ${
-                  selectedAmenities.includes(a)
+                onClick={() => toggleAmenity(key)}
+                className={`py-2.5 px-3 rounded-xl border text-sm transition-all flex items-center gap-2 ${
+                  selectedAmenities.includes(key)
                     ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300'
                     : 'border-border text-muted-foreground hover:border-teal-400'
                 }`}
               >
-                {selectedAmenities.includes(a) ? '✓ ' : ''}
-                {a}
+                <span>{icon}</span>
+                <span className="text-xs">{label}</span>
+                {selectedAmenities.includes(key) && (
+                  <span className="ml-auto text-teal-600 text-xs">✓</span>
+                )}
               </button>
             ))}
           </div>
-        </div>
+          {selectedAmenities.length > 0 && (
+            <p className="text-xs text-teal-600 dark:text-teal-400">
+              Đã chọn {selectedAmenities.length} tiện ích
+            </p>
+          )}
+        </Section>
 
         {/* Price */}
-        <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <DollarSign className="w-4 h-4 text-teal-600" />
-            <p className="font-medium">Giá thuê</p>
-          </div>
+        <Section icon={DollarSign} title="Giá thuê sân">
           <div>
             <Label className="mb-1.5 block text-sm">Giá / giờ (VNĐ) *</Label>
-            <Input
-              type="number"
-              min={10000}
-              step={10000}
-              placeholder="100000"
-              {...register('pricePerHour', { valueAsNumber: true })}
-            />
+            <div className="relative">
+              <Input
+                type="number"
+                min={10000}
+                step={10000}
+                placeholder="100000"
+                className="pr-12"
+                {...register('pricePerHour', { valueAsNumber: true })}
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">₫/h</span>
+            </div>
+            {watchedPrice > 0 && (
+              <p className="text-xs text-teal-600 dark:text-teal-400 mt-1">
+                ≈ {(watchedPrice || 0).toLocaleString('vi-VN')}₫ mỗi giờ
+              </p>
+            )}
             {errors.pricePerHour && (
               <p className="text-destructive text-xs mt-1">{errors.pricePerHour.message}</p>
             )}
           </div>
-        </div>
+        </Section>
 
         {/* Images */}
-        <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <ImageIcon className="w-4 h-4 text-teal-600" />
-            <p className="font-medium">Ảnh sân</p>
+        <Section icon={ImageIcon} title="Ảnh sân">
+          {/* Preview */}
+          <div className="relative rounded-xl overflow-hidden h-40 bg-secondary">
+            <img
+              src={previewUrl}
+              alt="Preview"
+              className="w-full h-full object-cover"
+              onError={() => setPreviewUrl(DEFAULT_IMAGES[0])}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+            <span className="absolute bottom-2 left-3 text-white text-xs">Preview</span>
           </div>
           <div>
             <Label className="mb-1.5 block text-sm text-muted-foreground">
               Nhập URL ảnh (mỗi URL một dòng)
             </Label>
             <Textarea
-              placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
-              rows={4}
-              {...register('imageUrls')}
+              placeholder={DEFAULT_IMAGES.join('\n')}
+              rows={3}
+              {...register('imageUrls', {
+                onChange: (e) => {
+                  const first = e.target.value.split('\n')[0].trim();
+                  if (first) setPreviewUrl(first);
+                },
+              })}
             />
+            <p className="text-xs text-muted-foreground mt-1">
+              Nếu để trống, ảnh mặc định sẽ được sử dụng
+            </p>
+          </div>
+        </Section>
+
+        {/* Map placeholder */}
+        <div className="bg-card border border-border rounded-xl p-4">
+          <div className="flex items-center gap-2 pb-2 border-b border-border mb-3">
+            <MapPin className="w-4 h-4 text-teal-600" />
+            <p className="font-medium text-sm">Vị trí trên bản đồ</p>
+          </div>
+          <div className="relative h-36 bg-gradient-to-br from-teal-50 to-emerald-50 dark:from-teal-900/10 dark:to-emerald-900/10 rounded-xl border border-dashed border-teal-200 dark:border-teal-800 flex flex-col items-center justify-center gap-2">
+            <MapPin className="w-8 h-8 text-teal-400" />
+            <p className="text-sm text-muted-foreground">Tích hợp Google Maps</p>
+            <p className="text-xs text-muted-foreground">Vị trí sẽ được xác định tự động từ địa chỉ</p>
           </div>
         </div>
 
@@ -281,7 +388,7 @@ export function VenueCreatePage() {
         <Button
           type="submit"
           size="lg"
-          className="w-full bg-teal-600 hover:bg-teal-700 text-white rounded-xl gap-2"
+          className="w-full bg-teal-600 hover:bg-teal-700 text-white rounded-xl gap-2 h-12"
           disabled={isSubmitting}
         >
           {isSubmitting ? (
@@ -292,7 +399,7 @@ export function VenueCreatePage() {
           ) : (
             <>
               <Building2 className="w-5 h-5" />
-              Tạo sân
+              Tạo sân ngay
             </>
           )}
         </Button>

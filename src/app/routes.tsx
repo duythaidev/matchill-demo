@@ -58,6 +58,7 @@ export const router = createBrowserRouter([
       { path: '/my-venues', element: <MyVenuesPage /> },
       { path: '/venue/create', element: <VenueCreatePage /> },
       { path: '/venue/dashboard', element: <VenueDashboardPage /> },
+      { path: '/venue/dashboard/:venueId', element: <VenueDashboardPage /> },
       { path: '/profile', element: <ProfilePage /> },
       { path: '/profile/:id', element: <PublicProfilePage /> },
       // Feed & Chat

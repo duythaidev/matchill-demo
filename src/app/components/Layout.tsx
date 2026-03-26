@@ -32,7 +32,6 @@ const venueOwnerNavLinks = [
   { to: '/my-venues',        label: 'Sân của tôi',   icon: Building2 },
   { to: '/venue/create',     label: 'Tạo sân mới',   icon: PlusCircle },
   { to: '/venue/dashboard',  label: 'Dashboard',     icon: TrendingUp },
-  { to: '/venues',           label: 'Xem tất cả sân', icon: Compass },
   { to: '/chat',             label: 'Chat',          icon: MessageSquare, badge: true },
 ];
 
