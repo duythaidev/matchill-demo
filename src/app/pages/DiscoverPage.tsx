@@ -159,7 +159,7 @@ function MemberAvatarStack({
         {Array.from({ length: slotsLeft }).map((_, i) => (
           <div
             key={`empty-${i}`}
-            style={{ zIndex: -i }}
+            style={{ zIndex: i }}
             className="w-8 h-8 rounded-full ring-2 ring-card bg-secondary/60 border-2 border-dashed border-muted-foreground/30 flex items-center justify-center"
           >
             <Plus className="w-3 h-3 text-muted-foreground/50" />

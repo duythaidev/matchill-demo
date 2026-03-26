@@ -19,6 +19,9 @@ import { ChatRoomPage } from './pages/ChatRoomPage';
 import { RatingPage } from './pages/RatingPage';
 import { AdminPage } from './pages/AdminPage';
 import { FindPartnerPage } from './pages/FindPartnerPage';
+import { MarketplacePage } from './pages/MarketplacePage';
+import { MarketplacePostPage } from './pages/MarketplacePostPage';
+import { MarketplaceDetailPage } from './pages/MarketplaceDetailPage';
 import { Layout } from './components/Layout';
 import { useAuthStore } from './stores/authStore';
 
@@ -65,6 +68,10 @@ export const router = createBrowserRouter([
       { path: '/rating/:activityId', element: <RatingPage /> },
       // Find Partner
       { path: '/find-partner', element: <FindPartnerPage /> },
+      // Marketplace
+      { path: '/marketplace', element: <MarketplacePage /> },
+      { path: '/marketplace/post', element: <MarketplacePostPage /> },
+      { path: '/marketplace/:id', element: <MarketplaceDetailPage /> },
       // Admin
       { path: '/admin', element: <AdminPage /> },
       { path: '/admin/reports', element: <AdminPage /> },
